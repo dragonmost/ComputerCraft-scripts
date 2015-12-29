@@ -19,6 +19,7 @@ function collect()
 			turtle.turnRight()
 			if not turtle.forward() then
 				return true
+			end
 			turtle.turnRight()
 			tleft = true
 		end
@@ -61,7 +62,7 @@ function goLocation(path)
 		path = "location"
 	end
 	
-	f = fs.open(path, "w")
+	f = fs.open(path, "r")
 	
 	if f ~= nil then
 		x = f.readLine(1)
@@ -75,14 +76,14 @@ function goLocation(path)
 	
 	faceNorth()
 	
-	posX,posY,posZ = gps.location()
+	posX,posY,posZ = gps.locate()
 	while posZ ~= z do
 		if posZ > z then
 			turtle.foward()
 		else
 			turtle.back()
 		end
-		posX,posY,posZ = gps.location()
+		posX,posY,posZ = gps.locate()
 	end
 	if posX > x then
 		turtle.turnLeft()
@@ -91,7 +92,7 @@ function goLocation(path)
 	end
 	while posX ~= x do
 		turtle.forward()
-		posX,posY,posZ = gps.location()
+		posX,posY,posZ = gps.locate()
 	end
 	while posY ~= y do
 		if posY > y then
@@ -99,7 +100,7 @@ function goLocation(path)
 		else
 			turtle.up()
 		end
-		posX,posY,posZ = gps.location()
+		posX,posY,posZ = gps.locate()
 	end
 	--my setup for now
 	faceNorth()
@@ -108,9 +109,9 @@ function goLocation(path)
 end
 
 function faceNorth()
-	posX,posY,posZ = gps.location()
+	posX,posY,posZ = gps.locate()
 	turtle.forward()
-	pos2X,pos2Y,pos2Z = gps.location()
+	pos2X,pos2Y,pos2Z = gps.locate()
 
 	if posX > pos2X then
 		turtle.turnRight()
