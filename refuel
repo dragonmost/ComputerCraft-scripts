@@ -1,0 +1,18 @@
+function refuel(nbCoal)
+	for i=1,16 do
+		turtle.select(i)
+		data = turtle.getItemDetail()
+		if data ~= nil then
+			if data.name == "minecraft:coal" then
+				turtle.refuel(nbCoal)
+				print("refuelling")
+			end
+		end
+	end
+	if turtle.getFuelLevel() < 12 then
+		print("low fuel")
+	end
+	turtle.select(1)
+end
+
+refuel(4)

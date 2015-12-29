@@ -1,0 +1,139 @@
+tleft = false
+function collect()	
+	while true do
+		if turtle.getFuelLevel()  < 12 then
+			refuel(4)
+		end
+		if turtle.forward() then
+			turtle.digDown()
+			turtle.suckDown()
+			plant("minecraft:wheat_seeds")
+		elseif tleft then
+			turtle.turnLeft()
+			if not turtle.forward() then
+				break
+			turtle.turnLeft()
+			tleft = false
+		else
+			turtle.turnRight()
+			if not turtle.forward() then
+				break
+			turtle.turnRight()
+			tleft = true
+		end
+	end
+end
+
+function plant(seed)
+	for i 1,16 do
+		turtle.select(i)
+		data = turtle.getItemDetail()
+		if data ~= nil then
+			if data.name == seed then
+				turtle.placeDown()
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function refuel(nbCoal)
+	for i=1,16 do
+		turtle.select(i)
+		data = turtle.getItemDetail()
+		if data ~= nil then
+			if data.name == "minecraft:coal" then
+				turtle.refuel(nbCoal)
+				print("refuelling")
+			end
+		end
+	end
+	if turtle.getFuelLevel() < 12 then
+		print("low fuel")
+	end
+	turtle.select(1)
+end
+
+function goLocation(path = "location")
+	f = fs.open(path, "w")
+	
+	if f ~= nil then
+		x = f.readLine(1)
+		y = f.readLine(2)
+		z = f.readLine(3)
+		f.close()
+	else
+		print("couldnt move")
+		break
+	end
+	
+	faceNorth()
+	
+	posX,posY,posZ = gps.location()
+	while posZ ~= z do
+		if posZ > z then
+			turtle.foward()
+		else
+			turtle.back()
+		end
+		posX,posY,posZ = gps.location()
+	end
+	if posX > x then
+		turtle.turnLeft()
+	else
+		turtle.turnRight()
+	end
+	while posX ~= x do
+		turtle.forward()
+		posX,posY,posZ = gps.location()
+	end
+	while posY ~= y do
+		if posY > y then
+			turtle.down()
+		else
+			turtle.up()
+		end
+		posX,posY,posZ = gps.location()
+	end
+	--my setup for now
+	faceNorth()
+	turtle.turnLeft()
+	turtle.turnLeft()
+end
+
+function faceNorth()
+	posX,posY,posZ = gps.location()
+	turtle.forward()
+	pos2X,pos2Y,pos2Z = gps.location()
+
+	if posX > pos2X then
+		turtle.turnRight()
+	elseif posX < pos2X then
+		turtle.turnLeft()
+	elseif posZ > pos2Z then
+		--already facing north
+	elseif posZ < pos2Z then
+		turtle.turnLeft()
+		turtle.turnLeft()
+	end
+end
+
+function farming()	
+	while true do
+		goLocation()
+		collect()
+	end
+end
+
+function saveLocation(path)
+	x,y,z = gps.locate()
+	f = fs.open(path, "w")
+	
+	if f ~= nil then
+		f.writeLine(x)
+		f.writeLine(y)
+		f.writeLine(z)
+		f.close()
+	end
+end

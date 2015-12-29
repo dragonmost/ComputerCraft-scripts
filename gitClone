@@ -1,0 +1,43 @@
+local args = {...}
+
+os.loadAPI("json")
+
+function getRepos(user)
+	data = http.get("https://api.github.com/users/" .. user .. "/repos")
+	return json.decode(data.readAll())
+end
+
+function getContents(user, repo, path)
+	data = http.get("https://api.github.com/" .. user .. "/" .. repo .. "/contents")
+	return json.decode(data.readAll())
+end
+
+function downloadFile(url, dir, file)
+	print("dl: " .. dir .. file)
+	data = http.get(url)
+	
+	if not fs.exists(dir) then
+		fs.makeDir(dir)
+	end
+	
+	path = dir .. "/" .. file
+	f = fs.open(path, "w")
+	
+	if f ~= nil then
+		f.write(data.readAll())
+		f.close()
+	end
+end
+
+if table.getn(args) == 2 then
+	repos = getRepos(args[1])
+	contents = getContents(args[1], args[2], "")
+	for i = 1,table.getn(contents) do
+		if contents[i].download_url ~= nil then
+			downloadFile(contents[i].download_url, args[2], contents[i].name)
+		else
+			--its a directory I should get in and fetch the other files too
+	end
+else
+	print("gitClone :user :repo")
+end
