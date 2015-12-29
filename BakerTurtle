@@ -1,13 +1,18 @@
-tleft = false
+tleft = true
 function collect()	
 	while true do
 		if turtle.getFuelLevel()  < 12 then
 			refuel(4)
 		end
 		if turtle.forward() then
-			turtle.digDown()
-			turtle.suckDown()
-			plant("minecraft:wheat_seeds")
+			data = turtle.inspectDown()
+			if data.name = "minecraft:wheat" then
+				if data.metadata = 7 then
+					turtle.digDown()
+					turtle.suckDown()
+					plant("minecraft:wheat_seeds")
+				end
+			end
 		elseif tleft then
 			turtle.turnLeft()
 			if not turtle.forward() then
@@ -65,9 +70,9 @@ function goLocation(path)
 	f = fs.open(path, "r")
 	
 	if f ~= nil then
-		x = f.readLine(1)
-		y = f.readLine(2)
-		z = f.readLine(3)
+		x = tonumber(f.readLine(1))
+		y = tonumber(f.readLine(2))
+		z = tonumber(f.readLine(3))
 		f.close()
 	else
 		print("couldnt move")
