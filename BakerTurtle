@@ -11,13 +11,14 @@ function collect()
 		elseif tleft then
 			turtle.turnLeft()
 			if not turtle.forward() then
-				break
+				return true
+			end
 			turtle.turnLeft()
 			tleft = false
 		else
 			turtle.turnRight()
 			if not turtle.forward() then
-				break
+				return true
 			turtle.turnRight()
 			tleft = true
 		end
@@ -25,7 +26,7 @@ function collect()
 end
 
 function plant(seed)
-	for i 1,16 do
+	for i= 1,16 do
 		turtle.select(i)
 		data = turtle.getItemDetail()
 		if data ~= nil then
@@ -55,7 +56,11 @@ function refuel(nbCoal)
 	turtle.select(1)
 end
 
-function goLocation(path = "location")
+function goLocation(path)
+	if path == nil then
+		path = "location"
+	end
+	
 	f = fs.open(path, "w")
 	
 	if f ~= nil then
@@ -65,7 +70,7 @@ function goLocation(path = "location")
 		f.close()
 	else
 		print("couldnt move")
-		break
+		return false
 	end
 	
 	faceNorth()
@@ -121,7 +126,7 @@ end
 
 function farming()	
 	while true do
-		goLocation()
+		goLocation("location")
 		collect()
 	end
 end
