@@ -13,16 +13,15 @@ function getContents(user, repo, path)
 end
 
 function downloadFile(url, dir, file)
-	print("dl: " .. dir .. "/" .. file)
+	path = dir .. "/" .. file
+	print("dl: " .. path)
 	data = http.get(url)
 	
 	if not fs.exists(dir) then
 		fs.makeDir(dir)
 	end
 	
-	path = dir .. "/" .. file
 	f = fs.open(path, "w")
-	
 	if f ~= nil then
 		f.write(data.readAll())
 		f.close()

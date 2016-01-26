@@ -1,150 +1,245 @@
 tleft = true
-function collect()	
-	while true do
-		if turtle.getFuelLevel()  < 12 then
-			refuel(4)
-		end
-		if turtle.forward() then
-			data = turtle.inspectDown()
-			if data.name = "minecraft:wheat" then
-				if data.metadata = 7 then
-					turtle.digDown()
-					turtle.suckDown()
-					plant("minecraft:wheat_seeds")
-				end
-			end
-		elseif tleft then
-			turtle.turnLeft()
-			if not turtle.forward() then
-				return true
-			end
-			turtle.turnLeft()
-			tleft = false
-		else
-			turtle.turnRight()
-			if not turtle.forward() then
-				return true
-			end
-			turtle.turnRight()
-			tleft = true
-		end
-	end
+function collect(crop, seeds, location)
+    s, data = turtle.inspectDown()
+    test1 = data.name == crop and data.metadata == 7
+    test2 = data.name ~= crop or data == nil
+  --print(test1 or test2)
+  if test1 or test2 then
+        turtle.digDown()
+        turtle.suckDown()
+        if not plant(seeds) then
+            print("out of " .. seeds)
+            return false
+        end
+    end
+    if not turtle.detect() then
+        turtle.forward()
+    else
+        if tleft then
+            turtle.turnLeft()
+            if turtle.forward() then
+                turtle.turnLeft()
+            else
+                goLocation(location)
+                return true
+            end
+            tleft = false
+        else
+            turtle.turnRight()
+            if turtle.forward() then
+                turtle.turnRight()
+            else
+                goLocation(location)
+                return true
+            end
+            tleft = true
+        end
+    end    
 end
-
+ 
+function createFence(width, height, location)
+    nbFence = width * 2 + height * 2 - 4
+    if selectItem("minecraft:fence") then
+        goLocation(location)
+        faceNorth()
+        for i=1,height do
+            turtle.back()
+            turtle.place()
+        end
+        turtle.turnRight()
+        turtle.forward()
+        turtle.turnLeft()
+        turtle.forward()
+        turtle.turnLeft()
+        for i =1,width-1 do
+            turtle.back()
+            turtle.place()
+        end
+        turtle.turnRight()
+        turtle.forward()
+        turtle.turnLeft()
+        turtle.forward()
+        turtle.turnLeft()
+        for i=1,height-1 do
+            turtle.back()
+            turtle.place()
+        end
+        turtle.turnRight()
+        turtle.forward()
+        turtle.turnLeft()
+        turtle.forward()
+        turtle.turnLeft()
+        for i =1,width-2 do
+            turtle.back()
+            turtle.place()
+        end
+        turtle.turnLeft()
+        turtle.back()
+        turtle.place()
+        --I could save the location
+        return true
+    end
+    print(nbFence .. " needed")
+    return false
+end
+ 
+function selectItem(itemName)
+    for i=1,16 do
+        turtle.select(i)
+        data = turtle.getItemDetail()
+        if data ~= nil then
+            if data.name == itemName then
+                return true
+            end
+        end
+    end
+    return false
+end
+ 
 function plant(seed)
-	for i= 1,16 do
-		turtle.select(i)
-		data = turtle.getItemDetail()
-		if data ~= nil then
-			if data.name == seed then
-				turtle.placeDown()
-				return true
-			end
-		end
-	end
-	return false
+    if selectItem(seed) then
+        turtle.placeDown()
+        return true
+    end
+    return false
 end
-
+ 
 function refuel(nbCoal)
-	for i=1,16 do
-		turtle.select(i)
-		data = turtle.getItemDetail()
-		if data ~= nil then
-			if data.name == "minecraft:coal" then
-				turtle.refuel(nbCoal)
-				print("refuelling")
-			end
-		end
-	end
-	if turtle.getFuelLevel() < 12 then
-		print("low fuel")
-	end
-	turtle.select(1)
+    if selectItem("minecraft:coal") then
+        turtle.refuel(nbCoal)
+        return true
+    else
+        print("low fuel")
+        return false
+    end
 end
-
+ 
 function goLocation(path)
-	if path == nil then
-		path = "location"
-	end
-	
-	f = fs.open(path, "r")
-	
-	if f ~= nil then
-		x = tonumber(f.readLine(1))
-		y = tonumber(f.readLine(2))
-		z = tonumber(f.readLine(3))
-		f.close()
-	else
-		print("couldnt move")
-		return false
-	end
-	
-	faceNorth()
-	
-	posX,posY,posZ = gps.locate()
-	while posZ ~= z do
-		if posZ > z then
-			turtle.foward()
-		else
-			turtle.back()
-		end
-		posX,posY,posZ = gps.locate()
-	end
-	if posX > x then
-		turtle.turnLeft()
-	else
-		turtle.turnRight()
-	end
-	while posX ~= x do
-		turtle.forward()
-		posX,posY,posZ = gps.locate()
-	end
-	while posY ~= y do
-		if posY > y then
-			turtle.down()
-		else
-			turtle.up()
-		end
-		posX,posY,posZ = gps.locate()
-	end
-	--my setup for now
-	faceNorth()
-	turtle.turnLeft()
-	turtle.turnLeft()
+    if path == nil then
+        path = "location"
+    end
+   
+    f = fs.open(path, "r")
+   
+    if f ~= nil then
+        x = tonumber(f.readLine(1))
+        y = tonumber(f.readLine(2))
+        z = tonumber(f.readLine(3))
+        f.close()
+    else
+        print("couldnt move")
+        return false
+    end
+   
+    faceNorth()
+   
+    posX,posY,posZ = gps.locate()
+    while posZ ~= z do
+        if posZ > z then
+            turtle.forward()
+        else
+            turtle.back()
+        end
+        posX,posY,posZ = gps.locate()
+    end
+    if posX > x then
+        turtle.turnLeft()
+    else
+        turtle.turnRight()
+    end
+    while posX ~= x do
+        turtle.forward()
+        posX,posY,posZ = gps.locate()
+    end
+    while posY ~= y do
+        if posY > y then
+            turtle.down()
+        else
+            turtle.up()
+        end
+        posX,posY,posZ = gps.locate()
+    end
+    --my setup for now
+    --faceNorth()
+    turtle.turnLeft()
+    turtle.turnLeft()
 end
-
+ 
 function faceNorth()
-	posX,posY,posZ = gps.locate()
-	turtle.forward()
-	pos2X,pos2Y,pos2Z = gps.locate()
-
-	if posX > pos2X then
-		turtle.turnRight()
-	elseif posX < pos2X then
-		turtle.turnLeft()
-	elseif posZ > pos2Z then
-		--already facing north
-	elseif posZ < pos2Z then
-		turtle.turnLeft()
-		turtle.turnLeft()
-	end
+    posX,posY,posZ = gps.locate()
+    if not turtle.forward() then
+        turtle.back()
+        faceNorth()
+    end
+    pos2X,pos2Y,pos2Z = gps.locate()
+ 
+    if posX > pos2X then
+        turtle.turnRight()
+    elseif posX < pos2X then
+        turtle.turnLeft()
+    elseif posZ > pos2Z then
+        --already facing north
+    elseif posZ < pos2Z then
+        turtle.turnLeft()
+        turtle.turnLeft()
+    end
 end
-
-function farming()	
-	while true do
-		goLocation("location")
-		collect()
-	end
+ 
+function farming()
+    goLocation("location")
+    while true do  
+        collect("minecraft:wheat", "minecraft:wheat_seeds", "location")
+        if inventoryFull() then
+            inventoryDrop("minecraft:wheat", "location")
+        end
+    end
 end
-
+ 
 function saveLocation(path)
-	x,y,z = gps.locate()
-	f = fs.open(path, "w")
-	
-	if f ~= nil then
-		f.writeLine(x)
-		f.writeLine(y)
-		f.writeLine(z)
-		f.close()
-	end
+    x,y,z = gps.locate()
+    f = fs.open(path, "w")
+   
+    if f ~= nil then
+        f.writeLine(x)
+        f.writeLine(y)
+        f.writeLine(z)
+        f.close()
+    end
+end
+ 
+function inventoryFull()
+    for i =1,16 do
+        if turtle.getItemCount(i) == 0 then
+            return false
+        end
+    end
+    return true
+end
+ 
+function inventoryDrop(itemName, location)
+    goLocation(location)
+    for i=1,16 do
+        turtle.select(i)
+        data = turtle.getItemDetail()
+        if data ~= nil then
+            if data.name == itemName then
+                turtle.dropUp()
+            end
+        end
+    end
+    return false
+end
+ 
+function moveLeft()
+    turtle.turnLeft()
+    r = turtle.forward()
+    turtle.turnRight()
+    return r
+end
+ 
+function moveRight()
+    turtle.turnRight()
+    r = turtle.forward()
+    turtle.turnLeft()
+    return r
 end
